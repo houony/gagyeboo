@@ -47,8 +47,11 @@ function render(){
  var M=D.months[idx],isNow=M.m===D.now,h="";
  h+="<div class=top><h1>"+ml(M.m)+"</h1><div class=nav><button onclick=\"go(-1)\" "+(idx===0?"disabled":"")+" aria-label=이전달>‹</button>"
   +"<button onclick=\"go(1)\" "+(idx===D.months.length-1?"disabled":"")+" aria-label=다음달>›</button></div></div>";
- if(isNow){h+="<div class=card><p class=lbl>오늘 쓸 수 있는 돈</p><div class=hero>"+(D.perDay>=0?won(D.perDay):"예산 초과")+"</div>"
-  +"<div class=sub>남은 변동예산 "+won(D.remain)+" · "+D.daysLeft+"일 남음</div></div>";}
+ if(isNow){var bal=D.assets.filter(function(a){return a.n.indexOf("신한")===0})[0];h+="<div class=card>";
+  if(bal)h+="<p class=lbl>신한 잔액</p><div class=hero>"+won(bal.a)+"</div><div style=\"height:1px;background:var(--line);margin:14px 0\"></div>";
+  h+="<div style=\"display:flex;justify-content:space-between;align-items:baseline;gap:8px\"><p class=lbl style=\"margin:0\">오늘 쓸 수 있는 돈</p>"
+  +"<div style=\"font-size:22px;font-weight:700;font-variant-numeric:tabular-nums\">"+(D.perDay>=0?won(D.perDay):"예산 초과")+"</div></div>"
+  +"<div class=sub style=\"text-align:right\">남은 변동예산 "+won(D.remain)+" · "+D.daysLeft+"일 남음</div></div>";}
  var rate=M.income>0?Math.round(M.saving/M.income*100)+"%":"–";
  h+="<div class=card><div class=kpis>"+kpi("수입",won(M.income))+kpi("지출",won(M.spend))+kpi("저축 (적금+CMA)",won(M.saving))+kpi("저축률",rate)+"</div></div>";
  if(D.need||D.bad){h+="<div class=\"card alert\">";
