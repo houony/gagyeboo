@@ -23,6 +23,9 @@ h2{font-size:16px;margin:0 0 12px;font-weight:650}
 .cat .amt small{color:var(--t3);font-size:12px;margin-left:4px}.bar{height:8px;border-radius:4px;background:var(--track);
 margin-top:6px;overflow:hidden;position:relative}.bar i{display:block;height:100%;border-radius:4px}
 .tag{font-size:11px;font-weight:600;margin-left:6px}
+.cat .hd{cursor:pointer;-webkit-tap-highlight-color:transparent}.cat .cv{display:inline-block;color:var(--t3);font-size:11px;margin-left:6px;transition:transform .15s}
+.cat.open .cv{transform:rotate(180deg)}.cl{margin-top:8px;padding:2px 10px;border-radius:10px;background:var(--bg)}
+.cl .tx{padding:7px 0;border-top:1px solid var(--line)}.cl .tx:first-child{border-top:0}.cl .tx .nm{max-width:56vw}.cl .tx .meta{white-space:normal;max-width:none}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--t2);margin:0 0 8px}.legend span{display:inline-flex;align-items:center;gap:5px}
 .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 #tip{font-size:13px;color:var(--t2);min-height:20px;margin-top:6px;font-variant-numeric:tabular-nums}
@@ -39,7 +42,7 @@ margin-top:6px;overflow:hidden;position:relative}.bar i{display:block;height:100
 svg text{font-size:11px;fill:var(--t3)}
 </style></head><body><div class="wrap" id="app"></div>
 <script>
-var D=null,idx=0,txLimit=30,KEY="gb_url";
+var D=null,idx=0,txLimit=30,KEY="gb_url";var openCat={};
 function won(n){return Math.round(n).toLocaleString("ko-KR")+"원"}
 function ml(m){return Math.floor(m/100)+"년 "+(m%100)+"월"}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]})}
@@ -68,9 +71,18 @@ function catCard(M){var list=D.cats.filter(function(c){return c.type==="지출"}
  list.forEach(function(c){var pct=c.b?c.v/c.b:null,col="var(--s1)",tag="";
   if(pct!==null&&pct>1){col="var(--crit)";tag="<span class=tag style=\"color:var(--crit)\">⛔ 초과</span>"}
   else if(pct!==null&&pct>=0.8){col="var(--warn)";tag="<span class=tag style=\"color:var(--t2)\">⚠ "+Math.round(pct*100)+"%</span>"}
-  h+="<div class=cat><div class=row><span class=n>"+esc(c.n)+tag+"</span><span class=amt>"+won(c.v)+(c.b?"<small>/ "+won(c.b)+"</small>":"")+"</span></div>";
+  var op=!!openCat[c.n];
+  h+="<div class=\"cat"+(op?" open":"")+"\"><div class=hd role=button tabindex=0 aria-expanded="+op+" data-c=\""+esc(c.n)+"\" onclick=\"tog(this.dataset.c)\">"
+   +"<div class=row><span class=n>"+esc(c.n)+tag+"<span class=cv>▾</span></span><span class=amt>"+won(c.v)+(c.b?"<small>/ "+won(c.b)+"</small>":"")+"</span></div>";
   if(c.b)h+="<div class=bar><i style=\"width:"+Math.max(0,Math.min(100,pct*100))+"%;background:"+col+"\"></i></div>";
-  h+="</div>"});
+  h+="</div>";if(op)h+=catList(M,c.n);h+="</div>"});
+ return h+"</div>"}
+function tog(n){openCat[n]=!openCat[n];render()}
+function catList(M,n){var list=D.tx.filter(function(t){return t.m===M.m&&t.c===n});
+ if(!list.length)return "<div class=cl><div class=sub style=\"padding:8px 0\">"+(D.months.length-idx>6?"6개월보다 이전 내역은 시트에서 확인하세요":"내역이 없어요")+"</div></div>";
+ var h="<div class=cl>";list.forEach(function(t){var meta=[t.d+" "+t.t];if(t.memo&&t.memo.indexOf("[이전")!==0)meta.push(t.memo);
+  h+="<div class=tx><div class=l><div class=nm>"+esc(t.n||t.memo||"(이름 없음)")+(t.st?"<span class=chk>확인필요</span>":"")+"</div><div class=meta>"+esc(meta.join(" · "))+"</div></div>"
+   +"<div class=\"a"+(t.dir==="입금"?" in":"")+"\">"+(t.dir==="입금"?"+":"−")+won(t.a)+"</div></div>"});
  return h+"</div>"}
 function trendCard(){var ms=D.months.slice(-6),W=340,H=150,pad=22,gw=(W-8)/ms.length,bw=Math.min(14,(gw-10)/2);
  var mx=1;ms.forEach(function(m){mx=Math.max(mx,m.income,m.spend)});
