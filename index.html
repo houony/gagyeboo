@@ -45,10 +45,11 @@ svg text{font-size:11px;fill:var(--t3)}
 var D=null,idx=0,txLimit=30,KEY="gb_url";var openCat={};
 function won(n){return Math.round(n).toLocaleString("ko-KR")+"원"}
 function ml(m){return Math.floor(m/100)+"년 "+(m%100)+"월"}
+function rg(m){var st=D.start||1;if(st<=1)return "";var y=Math.floor(m/100),mo=m%100,pm=mo===1?12:mo-1,e=new Date(y,mo-1,st-1);return pm+"."+st+" ~ "+mo+"."+e.getDate()}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]})}
 function render(){
  var M=D.months[idx],isNow=M.m===D.now,h="";
- h+="<div class=top><h1>"+ml(M.m)+"</h1><div class=nav><button onclick=\"go(-1)\" "+(idx===0?"disabled":"")+" aria-label=이전달>‹</button>"
+ h+="<div class=top><h1>"+ml(M.m)+(rg(M.m)?"<span style=\"font-size:13px;font-weight:400;color:var(--t3);margin-left:8px\">"+rg(M.m)+"</span>":"")+"</h1><div class=nav><button onclick=\"go(-1)\" "+(idx===0?"disabled":"")+" aria-label=이전달>‹</button>"
   +"<button onclick=\"go(1)\" "+(idx===D.months.length-1?"disabled":"")+" aria-label=다음달>›</button></div></div>";
  if(isNow){var bal=D.assets.filter(function(a){return a.n.indexOf("신한")===0})[0];h+="<div class=card>";
   if(bal)h+="<p class=lbl>신한 잔액</p><div class=hero>"+won(bal.a)+"</div><div style=\"height:1px;background:var(--line);margin:14px 0\"></div>";
@@ -103,7 +104,7 @@ function pick(i){idx=i;txLimit=30;render()}
 function fixedCard(){var todo=D.fixed.filter(function(f){return !f.done}),dn=D.fixed.length-todo.length,sum=0;
  todo.forEach(function(f){sum+=f.a});
  var h="<div class=card><h2>이번 달 남은 고정비 <span style=\"font-weight:400;color:var(--t3);font-size:13px\">"+won(sum)+"</span></h2>";
- todo.forEach(function(f){var st=f.day<D.today?"⚠ 지남·미확인":(f.day===D.today?"오늘":"D-"+(f.day-D.today));
+ todo.forEach(function(f){var dn=(f.dn!=null)?f.dn:f.day-D.today;var st=dn<0?"⚠ 지남·미확인":(dn===0?"오늘":"D-"+dn);
   h+="<div class=fx><span>"+f.day+"일 · "+esc(f.n)+"</span><span class=r>"+won(f.a)+" · "+st+"</span></div>"});
  if(!todo.length)h+="<div class=sub>이번 달 고정비는 모두 나갔어요</div>";
  h+="<div class=sub style=\"margin-top:10px\">✓ 완료 "+dn+"건</div>";return h+"</div>"}
